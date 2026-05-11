@@ -9,7 +9,7 @@ Supported Languages (for syntax highlight):
 - Python
 - Javascript
 
-Credits
+Credits:
 
 extended from (snaptoken's tutorial)[https://viewsourcecode.org/snaptoken/kilo/].
 
