@@ -13,6 +13,6 @@ Supported Languages (for syntax highlight):
 
 Credits:
 
-extended from (snaptoken's tutorial)[https://viewsourcecode.org/snaptoken/kilo/].
+extended from (snaptoken's tutorial) [https://viewsourcecode.org/snaptoken/kilo/].
 
-inspired by (anitrez's kilo)[https://antirez.com/news/108] text editor.
+inspired by (anitrez's kilo) [https://antirez.com/news/108] text editor.
