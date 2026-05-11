@@ -597,6 +597,14 @@ void editorInsertNewLine() {
     int indent = 0;
     while (indent < row->size && row->chars[indent] == ' ') indent++;
 
+    int between_brackets = 0;
+    if (E.syntax && E.cx > 0 && E.cx < row->size) {
+        char prev = row->chars[E.cx - 1];
+        char next = row->chars[E.cx];
+        if ((prev == '{' && next == '}') || (prev == '[' && next == ']') || (prev == '(' && next == ')'))
+            between_brackets = 1;
+    }
+
     if (E.cx == 0) {
         editorInsertRow(E.cy, "", 0);
     }
@@ -610,11 +618,26 @@ void editorInsertNewLine() {
     E.cy++;
     E.cx = 0;
 
-    erow* newrow = &E.row[E.cy];
-    for (int i = 0; i < indent; i++) {
-        editorRowInsertChar(newrow, i, ' ');
+    if (between_brackets) {
+        // Insert blank line with extra indent for cursor
+        editorInsertRow(E.cy, "", 0);
+        erow* cursorRow = &E.row[E.cy];
+        int newIndent = indent + TEXT_ED_TAB_STOP;
+        for (int i = 0; i < newIndent; i++)
+            editorRowInsertChar(cursorRow, i, ' ');
+        // Indent the closing bracket line
+        erow* closingRow = &E.row[E.cy + 1];
+        for (int i = 0; i < indent; i++)
+            editorRowInsertChar(closingRow, i, ' ');
+        E.cx = newIndent;
     }
-    E.cx = indent;
+    else {
+        erow* newrow = &E.row[E.cy];
+        for (int i = 0; i < indent; i++) {
+            editorRowInsertChar(newrow, i, ' ');
+        }
+        E.cx = indent;
+    }
 }
 
 void editorDelChar() {
@@ -1003,6 +1026,10 @@ void editorProcessKeypress() {
 
     default:
         editorInsertChar(c);
+        if (E.syntax && (c == '{' || c == '[' || c == '(')) {
+            int close = (c == '{') ? '}' : (c == '[') ? ']' : ')';
+            editorRowInsertChar(&E.row[E.cy], E.cx, close);
+        }
         E.saved_cx = -1;
         break;
     }
