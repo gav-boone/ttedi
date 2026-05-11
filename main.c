@@ -13,9 +13,9 @@
 
 /* defines */
 #define CTRL_KEY(k) ((k) & 0x1f)
-#define TEXT_ED_VERSION "0.0.1"
-#define TEXT_ED_TAB_STOP (E.syntax ? E.syntax->tab_stop : 4)
-#define TEXT_ED_QUIT_TIMES 1
+#define TTEDI_VERSION "1.0.0"
+#define TTEDI_TAB_STOP (E.syntax ? E.syntax->tab_stop : 4)
+#define TTEDI_QUIT_TIMES 1
 enum editorKey {
     BACKSPACE = 127,
     ARROW_LEFT = 1000,
@@ -470,13 +470,13 @@ void editorUpdateRow(erow* row) {
         if (row->chars[j] == '\t') tabs++;
 
     free(row->render);
-    row->render = malloc(row->size + tabs * (TEXT_ED_TAB_STOP - 1) + 1);
+    row->render = malloc(row->size + tabs * (TTEDI_TAB_STOP - 1) + 1);
 
     int idx = 0;
     for (j = 0; j < row->size; j++) {
         if (row->chars[j] == '\t') {
             row->render[idx++] = ' ';
-            while (idx % TEXT_ED_TAB_STOP != 0) row->render[idx++] = ' ';
+            while (idx % TTEDI_TAB_STOP != 0) row->render[idx++] = ' ';
         }
         else {
             row->render[idx++] = row->chars[j];
@@ -563,7 +563,7 @@ int editorCxtoRx(erow* row, int cx) {
     int j;
     for (j = 0; j < cx; j++) {
         if (row->chars[j] == '\t')
-            rx += (TEXT_ED_TAB_STOP - 1) - (rx % TEXT_ED_TAB_STOP);
+            rx += (TTEDI_TAB_STOP - 1) - (rx % TTEDI_TAB_STOP);
         rx++;
     }
     return rx;
@@ -574,7 +574,7 @@ int editorRxtoCx(erow* row, int rx) {
     int cx;
     for (cx = 0; cx < row->size; cx++) {
         if (row->chars[cx] == '\t')
-            cur_rx += (TEXT_ED_TAB_STOP - 1) - (cur_rx % TEXT_ED_TAB_STOP);
+            cur_rx += (TTEDI_TAB_STOP - 1) - (cur_rx % TTEDI_TAB_STOP);
 
         cur_rx++;
 
@@ -622,7 +622,7 @@ void editorInsertNewLine() {
         // Insert blank line with extra indent for cursor
         editorInsertRow(E.cy, "", 0);
         erow* cursorRow = &E.row[E.cy];
-        int newIndent = indent + TEXT_ED_TAB_STOP;
+        int newIndent = indent + TTEDI_TAB_STOP;
         for (int i = 0; i < newIndent; i++)
             editorRowInsertChar(cursorRow, i, ' ');
         // Indent the closing bracket line
@@ -653,14 +653,14 @@ void editorDelChar() {
         return;
     }
 
-    if (E.cx >= TEXT_ED_TAB_STOP && E.cx % TEXT_ED_TAB_STOP == 0) {
+    if (E.cx >= TTEDI_TAB_STOP && E.cx % TTEDI_TAB_STOP == 0) {
         int i;
-        for (i = 1; i <= TEXT_ED_TAB_STOP; i++)
+        for (i = 1; i <= TTEDI_TAB_STOP; i++)
             if (row->chars[E.cx - i] != ' ') break;
-        if (i > TEXT_ED_TAB_STOP) {
-            for (i = 0; i < TEXT_ED_TAB_STOP; i++)
-                editorRowDelChar(row, E.cx - TEXT_ED_TAB_STOP);
-            E.cx -= TEXT_ED_TAB_STOP;
+        if (i > TTEDI_TAB_STOP) {
+            for (i = 0; i < TTEDI_TAB_STOP; i++)
+                editorRowDelChar(row, E.cx - TTEDI_TAB_STOP);
+            E.cx -= TTEDI_TAB_STOP;
             return;
         }
     }
@@ -897,11 +897,11 @@ void editorMoveCursor(int key) {
         break;
     case ARROW_LEFT:
         if (E.cx != 0) {
-            if (row && E.cx >= TEXT_ED_TAB_STOP && E.cx % TEXT_ED_TAB_STOP == 0) {
+            if (row && E.cx >= TTEDI_TAB_STOP && E.cx % TTEDI_TAB_STOP == 0) {
                 int i;
-                for (i = 1; i <= TEXT_ED_TAB_STOP; i++)
+                for (i = 1; i <= TTEDI_TAB_STOP; i++)
                     if (row->chars[E.cx - i] != ' ') break;
-                if (i > TEXT_ED_TAB_STOP) { E.cx -= TEXT_ED_TAB_STOP; break; }
+                if (i > TTEDI_TAB_STOP) { E.cx -= TTEDI_TAB_STOP; break; }
             }
             E.cx--;
         }
@@ -912,11 +912,11 @@ void editorMoveCursor(int key) {
         break;
     case ARROW_RIGHT:
         if (row && E.cx < row->size) {
-            if (E.cx + TEXT_ED_TAB_STOP <= row->size && E.cx % TEXT_ED_TAB_STOP == 0) {
+            if (E.cx + TTEDI_TAB_STOP <= row->size && E.cx % TTEDI_TAB_STOP == 0) {
                 int i;
-                for (i = 0; i < TEXT_ED_TAB_STOP; i++)
+                for (i = 0; i < TTEDI_TAB_STOP; i++)
                     if (row->chars[E.cx + i] != ' ') break;
-                if (i == TEXT_ED_TAB_STOP) { E.cx += TEXT_ED_TAB_STOP; break; }
+                if (i == TTEDI_TAB_STOP) { E.cx += TTEDI_TAB_STOP; break; }
             }
             E.cx++;
         }
@@ -938,7 +938,7 @@ void editorMoveCursor(int key) {
 }
 
 void editorProcessKeypress() {
-    static int quit_times = TEXT_ED_QUIT_TIMES;
+    static int quit_times = TTEDI_QUIT_TIMES;
 
     int c = editorReadKey();
     DWORD written;
@@ -1018,7 +1018,7 @@ void editorProcessKeypress() {
 
     case '\t': {
         int j;
-        for (j = 0; j < TEXT_ED_TAB_STOP; j++) {
+        for (j = 0; j < TTEDI_TAB_STOP; j++) {
             editorInsertChar(32);
         }
         break;
@@ -1034,7 +1034,7 @@ void editorProcessKeypress() {
         break;
     }
 
-    quit_times = TEXT_ED_QUIT_TIMES;
+    quit_times = TTEDI_QUIT_TIMES;
 }
 
 /* ouptut */
@@ -1045,7 +1045,7 @@ void editorDrawRows(struct abuf* ab) {
         if (filerow >= E.numRows) {
             if (E.numRows == 0 && y == E.screenRows / 3) {
                 char welcome[80];
-                int welcomeLen = snprintf(welcome, sizeof(welcome), "Welcome to Text Ed v%s", TEXT_ED_VERSION);
+                int welcomeLen = snprintf(welcome, sizeof(welcome), "Welcome to Text Ed v%s", TTEDI_VERSION);
                 if (welcomeLen > E.screenCols)
                     welcomeLen = E.screenCols;
 
