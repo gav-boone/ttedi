@@ -1,6 +1,8 @@
 # ttedi
 a lightweight terminal text editor for Windows
 
+<img src="image/README/ttedi.png" alt="ttedi" width="25%">
+
 Usage: `ttedi <filename>`
 
 Supported Languages (for syntax highlight):
