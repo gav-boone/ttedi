@@ -1,3 +1,5 @@
+/* Based on kilo by Salvatore Sanfilippo. See LICENSE.txt */
+
 /* includes */
 #include <stdio.h>
 #include <stdlib.h>
