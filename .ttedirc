@@ -1,0 +1,22 @@
+# ttedi configuration file
+# Place this file at %USERPROFILE%\.ttedirc
+
+# Global settings
+tab_stop=4
+line_numbers=1
+auto_close_brackets=1
+quit_times=1
+status_timeout=5
+
+# Language-specific overrides
+[c]
+tab_stop=4
+
+[python]
+tab_stop=4
+
+[js]
+tab_stop=2
+
+[java]
+tab_stop=4

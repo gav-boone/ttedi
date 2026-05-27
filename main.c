@@ -59,6 +59,14 @@ struct editorSyntax {
     int tab_stop;
 };
 
+struct editorSettings {
+    int tab_stop_default;
+    int line_numbers;
+    int auto_close_brackets;
+    int quit_times;
+    int status_timeout;
+};
+
 typedef struct erow {
     int idx;
     int size;
@@ -88,6 +96,7 @@ struct editorConfig {
     time_t statusmsg_time;
     int dirty;
     struct editorSyntax* syntax;
+    struct editorSettings settings;
 };
 
 struct editorConfig E;
@@ -772,6 +781,64 @@ void editorOpen(char* filename) {
     E.dirty = 0;
 }
 
+void editorLoadSettings() {
+    char path[MAX_PATH];
+    snprintf(path, sizeof(path), "%s\\.ttedirc", getenv("USERPROFILE"));
+    FILE* fp = fopen(path, "r");
+    if (!fp) return;
+
+    char line[256];
+    char section[32] = "";
+    while (fgets(line, sizeof(line), fp)) {
+        int len = strlen(line);
+        while (len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r'))
+            line[--len] = '\0';
+
+        if (len == 0 || line[0] == '#') continue;
+
+        if (line[0] == '[') {
+            char* end = strchr(line, ']');
+            if (end) {
+                *end = '\0';
+                strncpy(section, line + 1, sizeof(section) - 1);
+                section[sizeof(section) - 1] = '\0';
+            }
+            continue;
+        }
+
+        char* eq = strchr(line, '=');
+        if (!eq) continue;
+        *eq = '\0';
+        char* key = line;
+        char* value = eq + 1;
+        while (*value == ' ') value++;
+
+        if (section[0] == '\0') {
+            if (!strcmp(key, "tab_stop"))
+                E.settings.tab_stop_default = atoi(value);
+            else if (!strcmp(key, "line_numbers"))
+                E.settings.line_numbers = atoi(value);
+            else if (!strcmp(key, "auto_close_brackets"))
+                E.settings.auto_close_brackets = atoi(value);
+            else if (!strcmp(key, "quit_times"))
+                E.settings.quit_times = atoi(value);
+            else if (!strcmp(key, "status_timeout"))
+                E.settings.status_timeout = atoi(value);
+        }
+        else {
+            for (unsigned int i = 0; i < HLDB_ENTRIES; i++) {
+                if (!strcmp(HLDB[i].filetype, section)) {
+                    if (!strcmp(key, "tab_stop"))
+                        HLDB[i].tab_stop = atoi(value);
+                    break;
+                }
+            }
+        }
+    }
+
+    fclose(fp);
+}
+
 /* find */
 void editorFindCallback(char* query, int key) {
     static int last_match = -1;
@@ -946,7 +1013,8 @@ void editorMoveCursor(int key) {
 }
 
 void editorProcessKeypress() {
-    static int quit_times = TTEDI_QUIT_TIMES;
+    static int quit_times = -1;
+    if (quit_times == -1) quit_times = E.settings.quit_times;
 
     int c = editorReadKey();
     DWORD written;
@@ -1031,7 +1099,7 @@ void editorProcessKeypress() {
         }
         break;
     }
-    
+
     case SHIFT_TAB: {
         if (E.cy < E.numRows) {
             erow* row = &E.row[E.cy];
@@ -1047,7 +1115,7 @@ void editorProcessKeypress() {
 
     default:
         editorInsertChar(c);
-        if (E.syntax && (c == '{' || c == '[' || c == '(')) {
+        if (E.settings.auto_close_brackets && E.syntax && (c == '{' || c == '[' || c == '(')) {
             int close = (c == '{') ? '}' : (c == '[') ? ']' : ')';
             editorRowInsertChar(&E.row[E.cy], E.cx, close);
         }
@@ -1055,7 +1123,7 @@ void editorProcessKeypress() {
         break;
     }
 
-    quit_times = TTEDI_QUIT_TIMES;
+    quit_times = E.settings.quit_times;
 }
 
 /* ouptut */
@@ -1202,7 +1270,7 @@ void editorDrawMessageBar(struct abuf* ab) {
     abAppend(ab, "\x1b[K\x1b[90m", 8);
     int msglen = strlen(E.statusmsg);
     if (msglen > E.screenCols) msglen = E.screenCols;
-    if (msglen && time(NULL) - E.statusmsg_time < 5)
+    if (msglen && time(NULL) - E.statusmsg_time < E.settings.status_timeout)
         abAppend(ab, E.statusmsg, msglen);
     abAppend(ab, "\x1b[m", 3);
 }
@@ -1254,6 +1322,11 @@ void initEditor() {
     E.dirty = 0;
     E.syntax = NULL;
     E.lineno_width = 1;
+    E.settings.tab_stop_default = 4;
+    E.settings.line_numbers = 1;
+    E.settings.auto_close_brackets = 1;
+    E.settings.quit_times = 1;
+    E.settings.status_timeout = 5;
 
     if (getWindowSize(&E.screenRows, &E.screenCols) == -1)
         die("getWindowSize");
@@ -1265,6 +1338,7 @@ void initEditor() {
 int main(int argc, char* argv[]) {
     enableRawMode();
     initEditor();
+    editorLoadSettings();
     if (argc >= 2) {
         editorOpen(argv[1]);
     }
