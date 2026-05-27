@@ -44,6 +44,15 @@ tab_stop=4
 | `auto_close_brackets` | Auto-insert closing `}`, `]`, `)` | 1 |
 | `quit_times` | Ctrl+Q presses to force-quit with unsaved changes | 1 |
 | `status_timeout` | Seconds before status message disappears | 5 |
+| `color_default` | Default text color | 37 (white) |
+| `color_comment` | Single-line comment color | 92 (bright green) |
+| `color_mlcomment` | Multi-line comment color | 92 (bright green) |
+| `color_keyword1` | Keyword color | 35 (magenta) |
+| `color_keyword2` | Type/literal color | 36 (cyan) |
+| `color_string` | String literal color | 33 (yellow) |
+| `color_number` | Number literal color | 32 (green) |
+| `color_match` | Search match highlight | 100 (gray bg) |
+| `color_function` | Function name color | 93 (bright yellow) |
 
 Language sections (`[c]`, `[python]`, `[js]`, `[java]`) override `tab_stop` per filetype.
 

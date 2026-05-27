@@ -59,12 +59,15 @@ struct editorSyntax {
     int tab_stop;
 };
 
+#define HL_COLOR_COUNT 9
+
 struct editorSettings {
     int tab_stop_default;
     int line_numbers;
     int auto_close_brackets;
     int quit_times;
     int status_timeout;
+    int colors[HL_COLOR_COUNT];
 };
 
 typedef struct erow {
@@ -439,17 +442,9 @@ void editorUpdateSyntax(erow* row) {
 }
 
 int editorSyntaxToColor(int hl) {
-    switch (hl) {
-    case HL_MLCOMMENT:
-    case HL_COMMENT: return 92; //bright green
-    case HL_STRING: return 33; //yellow 
-    case HL_KEYWORD1: return 35; //magenta
-    case HL_KEYWORD2: return 36; //cyan
-    case HL_NUMBER: return 32; //green
-    case HL_MATCH: return 100; //highlight gray
-    case HL_FUNC: return 93; // bright yellow
-    default: return 37; //white 
-    }
+    if (hl >= 0 && hl < HL_COLOR_COUNT)
+        return E.settings.colors[hl];
+    return 37;
 }
 
 void editorSelectSyntaxHighlight() {
@@ -824,6 +819,24 @@ void editorLoadSettings() {
                 E.settings.quit_times = atoi(value);
             else if (!strcmp(key, "status_timeout"))
                 E.settings.status_timeout = atoi(value);
+            else if (!strcmp(key, "color_default"))
+                E.settings.colors[HL_DEFAULT] = atoi(value);
+            else if (!strcmp(key, "color_comment"))
+                E.settings.colors[HL_COMMENT] = atoi(value);
+            else if (!strcmp(key, "color_mlcomment"))
+                E.settings.colors[HL_MLCOMMENT] = atoi(value);
+            else if (!strcmp(key, "color_keyword1"))
+                E.settings.colors[HL_KEYWORD1] = atoi(value);
+            else if (!strcmp(key, "color_keyword2"))
+                E.settings.colors[HL_KEYWORD2] = atoi(value);
+            else if (!strcmp(key, "color_string"))
+                E.settings.colors[HL_STRING] = atoi(value);
+            else if (!strcmp(key, "color_number"))
+                E.settings.colors[HL_NUMBER] = atoi(value);
+            else if (!strcmp(key, "color_match"))
+                E.settings.colors[HL_MATCH] = atoi(value);
+            else if (!strcmp(key, "color_function"))
+                E.settings.colors[HL_FUNC] = atoi(value);
         }
         else {
             for (unsigned int i = 0; i < HLDB_ENTRIES; i++) {
@@ -1327,6 +1340,15 @@ void initEditor() {
     E.settings.auto_close_brackets = 1;
     E.settings.quit_times = 1;
     E.settings.status_timeout = 5;
+    E.settings.colors[HL_DEFAULT] = 37;
+    E.settings.colors[HL_COMMENT] = 92;
+    E.settings.colors[HL_KEYWORD1] = 35;
+    E.settings.colors[HL_KEYWORD2] = 36;
+    E.settings.colors[HL_STRING] = 33;
+    E.settings.colors[HL_MATCH] = 100;
+    E.settings.colors[HL_NUMBER] = 32;
+    E.settings.colors[HL_MLCOMMENT] = 92;
+    E.settings.colors[HL_FUNC] = 93;
 
     if (getWindowSize(&E.screenRows, &E.screenCols) == -1)
         die("getWindowSize");

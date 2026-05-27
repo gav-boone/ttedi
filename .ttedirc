@@ -8,6 +8,18 @@ auto_close_brackets=1
 quit_times=1
 status_timeout=5
 
+# Syntax highlight colors (ANSI color codes)
+# See table below for available codes
+color_default=37
+color_comment=92
+color_mlcomment=92
+color_keyword1=35
+color_keyword2=36
+color_string=33
+color_number=32
+color_match=100
+color_function=93
+
 # Language-specific overrides
 [c]
 tab_stop=4
@@ -20,3 +32,9 @@ tab_stop=2
 
 [java]
 tab_stop=4
+
+# ANSI Color Reference:
+# 30=black, 31=red, 32=green, 33=yellow, 34=blue, 35=magenta, 36=cyan, 37=white
+# 90=bright black, 91=bright red, 92=bright green, 93=bright yellow
+# 94=bright blue, 95=bright magenta, 96=bright cyan, 97=bright white
+# 100=gray background (used for search match highlight)
