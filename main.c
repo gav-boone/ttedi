@@ -29,6 +29,7 @@ enum editorKey {
     END,
     PAGE_UP,
     PAGE_DOWN,
+    SHIFT_TAB,
 };
 
 enum editorHighlight {
@@ -262,6 +263,8 @@ int handleEscSeq() {
             return HOME;
         case 'F':
             return END;
+        case 'Z':
+            return SHIFT_TAB;
         }
         return '\x1b';
     }
@@ -1025,6 +1028,19 @@ void editorProcessKeypress() {
         int j;
         for (j = 0; j < TTEDI_TAB_STOP; j++) {
             editorInsertChar(32);
+        }
+        break;
+    }
+    
+    case SHIFT_TAB: {
+        if (E.cy < E.numRows) {
+            erow* row = &E.row[E.cy];
+            int spaces = 0;
+            while (spaces < TTEDI_TAB_STOP && spaces < row->size && row->chars[spaces] == ' ')
+                spaces++;
+            for (int i = 0; i < spaces; i++)
+                editorRowDelChar(row, 0);
+            E.cx = (E.cx > spaces) ? E.cx - spaces : 0;
         }
         break;
     }

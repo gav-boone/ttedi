@@ -19,5 +19,5 @@ inspired by [antirez's kilo](https://antirez.com/news/108) text editor.
 
 ## Road to 1.0
 [x] line numbers
-[ ] shift+tab, remove one indent
+[x] shift+tab, remove one indent
 [ ] config file
