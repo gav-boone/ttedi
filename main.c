@@ -1163,7 +1163,7 @@ void editorScroll() {
 }
 
 void editorDrawStatusBar(struct abuf* ab) {
-    abAppend(ab, "\x1b[7m", 4);
+    abAppend(ab, "\x1b[30;100m", 9);
     char status[80], rstatus[80];
     int len = snprintf(
         status,
@@ -1199,11 +1199,12 @@ void editorSetStatusMessage(const char* fmt, ...) {
 }
 
 void editorDrawMessageBar(struct abuf* ab) {
-    abAppend(ab, "\x1b[K", 3);
+    abAppend(ab, "\x1b[K\x1b[90m", 8);
     int msglen = strlen(E.statusmsg);
     if (msglen > E.screenCols) msglen = E.screenCols;
     if (msglen && time(NULL) - E.statusmsg_time < 5)
         abAppend(ab, E.statusmsg, msglen);
+    abAppend(ab, "\x1b[m", 3);
 }
 
 void editorRefreshScreen() {
