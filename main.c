@@ -80,6 +80,7 @@ struct editorConfig {
     int numRows;
     int rowoff;
     int coloff;
+    int lineno_width;
     erow* row;
     char* filename;
     char statusmsg[80];
@@ -934,7 +935,8 @@ void editorMoveCursor(int key) {
     int rowlen = row ? row->size : 0;
     if (key == ARROW_UP || key == ARROW_DOWN) {
         E.cx = (E.saved_cx < rowlen) ? E.saved_cx : rowlen;
-    } else {
+    }
+    else {
         if (E.cx > rowlen) E.cx = rowlen;
         E.saved_cx = -1;
     }
@@ -1043,6 +1045,7 @@ void editorProcessKeypress() {
 /* ouptut */
 void editorDrawRows(struct abuf* ab) {
     int y;
+    int gutter = E.lineno_width + 1;
     for (y = 0; y < E.screenRows; y++) {
         int filerow = y + E.rowoff;
         if (filerow >= E.numRows) {
@@ -1063,13 +1066,23 @@ void editorDrawRows(struct abuf* ab) {
                 abAppend(ab, welcome, welcomeLen);
             }
             else {
-                abAppend(ab, "~", 1);
+                char lno[16];
+                int llen = snprintf(lno, sizeof(lno), "%*s ", E.lineno_width, "~");
+                abAppend(ab, "\x1b[90m", 5);
+                abAppend(ab, lno, llen);
+                abAppend(ab, "\x1b[39m", 5);
             }
         }
         else {
+            char lno[16];
+            int llen = snprintf(lno, sizeof(lno), "%*d ", E.lineno_width, filerow + 1);
+            abAppend(ab, "\x1b[90m", 5);
+            abAppend(ab, lno, llen);
+            abAppend(ab, "\x1b[39m", 5);
+
             int len = E.row[filerow].rsize - E.coloff;
             if (len < 0) len = 0;
-            if (len > E.screenCols) len = E.screenCols;
+            if (len > E.screenCols - gutter) len = E.screenCols - gutter;
             char* c = &E.row[filerow].render[E.coloff];
             unsigned char* hl = &E.row[filerow].hl[E.coloff];
             int current_color = -1;
@@ -1127,8 +1140,9 @@ void editorScroll() {
     if (E.rx < E.coloff) {
         E.coloff = E.rx;
     }
-    if (E.rx >= E.coloff + E.screenCols) {
-        E.coloff = E.rx = E.screenCols + 1;
+    int textCols = E.screenCols - E.lineno_width - 1;
+    if (E.rx >= E.coloff + textCols) {
+        E.coloff = E.rx - textCols + 1;
     }
 }
 
@@ -1187,12 +1201,18 @@ void editorRefreshScreen() {
 
     getWindowSize(&E.screenRows, &E.screenCols);
     E.screenRows -= 2;
+
+    int n = E.numRows > 0 ? E.numRows : 1;
+    E.lineno_width = 0;
+    while (n > 0) { E.lineno_width++; n /= 10; }
+    if (E.lineno_width < 2) E.lineno_width = 2;
+
     editorDrawRows(&ab);
     editorDrawStatusBar(&ab);
     editorDrawMessageBar(&ab);
 
     char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1, (E.rx - E.coloff) + 1);
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1, (E.rx - E.coloff) + E.lineno_width + 2);
     abAppend(&ab, buf, strlen(buf));
 
     abAppend(&ab, "\x1b[?25h", 6);
@@ -1216,6 +1236,7 @@ void initEditor() {
     E.statusmsg_time = 0;
     E.dirty = 0;
     E.syntax = NULL;
+    E.lineno_width = 1;
 
     if (getWindowSize(&E.screenRows, &E.screenCols) == -1)
         die("getWindowSize");

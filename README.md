@@ -16,3 +16,8 @@ Credits:
 extended from [snaptoken's tutorial](https://viewsourcecode.org/snaptoken/kilo/).
 
 inspired by [antirez's kilo](https://antirez.com/news/108) text editor.
+
+## Road to 1.0
+[x] line numbers
+[ ] shift+tab, remove one indent
+[ ] config file
